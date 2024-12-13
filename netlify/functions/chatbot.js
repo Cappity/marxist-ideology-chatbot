@@ -1,4 +1,4 @@
-const fetch = require('node-fetch'); // Make sure 'node-fetch' is included
+const fetch = require('node-fetch');
 
 exports.handler = async function(event, context) {
     const headers = {
@@ -40,7 +40,16 @@ exports.handler = async function(event, context) {
         // Use your OpenAI API or any chatbot API here
         const apiKey = process.env.API_KEY; // Ensure your API key is available in environment variables
 
-        // Replace with actual chatbot service call, for example OpenAI API
+        // Ensure your API key is set in environment variables on Netlify
+        if (!apiKey) {
+            return {
+                statusCode: 500,
+                headers: headers,
+                body: JSON.stringify({ error: 'API key not found in environment variables' })
+            };
+        }
+
+        // Make the request to OpenAI API or similar service
         const response = await fetch('https://api.openai.com/v1/completions', {
             method: 'POST',
             headers: {
