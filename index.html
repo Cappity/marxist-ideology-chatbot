@@ -1,39 +1,100 @@
-<script>
-    const chatBox = document.getElementById('chat-box'); // The chat window element
-    const userInput = document.getElementById('user-input'); // The input field for the user
+<!DOCTYPE html>
+<html lang="en">
 
-    // Function to handle sending messages
-    async function sendMessage() {
-        const userMessage = userInput.value.trim(); // Get the user input
-        if (userMessage === '') return; // Ignore empty messages
-
-        appendMessage(userMessage, 'user'); // Display user message
-        userInput.value = ''; // Clear the input field
-
-        // Send a POST request to your serverless function
-        try {
-            const response = await fetch('/.netlify/functions/chatbot', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({ userMessage }) // Send the user input as JSON
-            });
-
-            const data = await response.json(); // Get the response from the serverless function
-            appendMessage(data.response || "Sorry, I couldn't understand that.", 'bot'); // Display the response
-        } catch (error) {
-            appendMessage("Sorry, something went wrong. Try again.", 'bot');
-            console.error('Error:', error); // Log any errors
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Marxist Ideology Chatbot</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #f4f4f9;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
         }
-    }
 
-    // Function to append messages to the chat window
-    function appendMessage(message, sender) {
-        const div = document.createElement('div');
-        div.classList.add(sender === 'user' ? 'user-msg' : 'bot-msg'); // Apply styling for user/bot
-        div.textContent = message;
-        chatBox.appendChild(div);
-        chatBox.scrollTop = chatBox.scrollHeight; // Scroll to the bottom of the chat window
-    }
-</script>
+        h1 {
+            text-align: center;
+            color: #333;
+        }
+
+        #chat-input {
+            padding: 10px;
+            width: 300px;
+            margin: 10px 0;
+            border-radius: 5px;
+            border: 1px solid #ccc;
+        }
+
+        button {
+            padding: 10px 20px;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background-color: #0056b3;
+        }
+
+        #chatbot-output {
+            margin-top: 20px;
+            padding: 10px;
+            width: 300px;
+            background-color: #e9ecef;
+            border-radius: 5px;
+            border: 1px solid #ccc;
+            min-height: 50px;
+        }
+    </style>
+</head>
+
+<body>
+
+    <h1>Marxist Ideology Chatbot</h1>
+
+    <input type="text" id="chat-input" placeholder="Ask a question about Marxism" />
+    <button onclick="askQuestion()">Ask</button>
+
+    <div id="chatbot-output"></div>
+
+    <script>
+        async function askQuestion() {
+            const input = document.getElementById('chat-input').value;
+            const responseContainer = document.getElementById('chatbot-output');
+
+            // Show loading text while waiting for the response
+            responseContainer.innerHTML = "<p>Loading...</p>";
+
+            try {
+                const response = await fetch('https://your-netlify-function-url/.netlify/functions/chatbot', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ userMessage: input })
+                });
+
+                const data = await response.json();
+
+                // Check if the response has a valid message
+                if (data.response) {
+                    responseContainer.innerHTML = `<p>${data.response}</p>`;
+                } else {
+                    responseContainer.innerHTML = "<p>Sorry, I couldn't understand that. Please try again.</p>";
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                responseContainer.innerHTML = "<p>Error: Could not fetch response</p>";
+            }
+        }
+    </script>
+
+</body>
+
+</html>
