@@ -17,7 +17,6 @@ exports.handler = async function(event, context) {
     }
 
     try {
-        // Check if the request is a POST request
         if (event.httpMethod !== 'POST') {
             return {
                 statusCode: 405,
@@ -26,10 +25,11 @@ exports.handler = async function(event, context) {
             };
         }
 
-        // Parse the incoming JSON body
         const { userMessage } = JSON.parse(event.body);
 
+        // Debugging: check if the user message is present
         if (!userMessage) {
+            console.log('Error: No message provided');
             return {
                 statusCode: 400,
                 headers: headers,
@@ -37,11 +37,10 @@ exports.handler = async function(event, context) {
             };
         }
 
-        // Use your OpenAI API or any chatbot API here
-        const apiKey = process.env.API_KEY; // Ensure your API key is available in environment variables
+        const apiKey = process.env.API_KEY;
 
-        // Ensure your API key is set in environment variables on Netlify
         if (!apiKey) {
+            console.log('Error: No API key found');
             return {
                 statusCode: 500,
                 headers: headers,
@@ -49,7 +48,8 @@ exports.handler = async function(event, context) {
             };
         }
 
-        // Make the request to OpenAI API or similar service
+        // Call to OpenAI API or any other service (add debugging)
+        console.log(`Sending request to OpenAI API with message: ${userMessage}`);
         const response = await fetch('https://api.openai.com/v1/completions', {
             method: 'POST',
             headers: {
@@ -63,8 +63,8 @@ exports.handler = async function(event, context) {
         });
 
         const data = await response.json();
+        console.log('OpenAI Response:', data); // Debugging
 
-        // Check if the response is successful
         if (response.ok && data) {
             return {
                 statusCode: 200,
@@ -72,6 +72,7 @@ exports.handler = async function(event, context) {
                 body: JSON.stringify({ response: data.choices[0].message.content })
             };
         } else {
+            console.log('Error fetching response from OpenAI:', data);
             return {
                 statusCode: 500,
                 headers: headers,
