@@ -3,7 +3,7 @@ const fetch = require('node-fetch'); // Import fetch to make HTTP requests
 exports.handler = async function(event, context) {
     const { userMessage } = JSON.parse(event.body); // Get the user input from the request body
 
-    const API_KEY = process.env.HUGGING_FACE_API_KEY; // Use environment variable to store the API key
+    const API_KEY = process.env.API_KEY; // Access the API key from environment variable
     const apiUrl = 'https://api-inference.huggingface.co/models/gpt2'; // Hugging Face API URL
 
     try {
