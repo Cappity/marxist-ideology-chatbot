@@ -1,36 +1,39 @@
 <script>
-    const chatBox = document.getElementById('chat-box');
-    const userInput = document.getElementById('user-input');
+    const chatBox = document.getElementById('chat-box'); // The chat window element
+    const userInput = document.getElementById('user-input'); // The input field for the user
 
+    // Function to handle sending messages
     async function sendMessage() {
-        const userMessage = userInput.value.trim();
-        if (userMessage === '') return;
+        const userMessage = userInput.value.trim(); // Get the user input
+        if (userMessage === '') return; // Ignore empty messages
 
-        appendMessage(userMessage, 'user');
-        userInput.value = '';
+        appendMessage(userMessage, 'user'); // Display user message
+        userInput.value = ''; // Clear the input field
 
-        // Send request to the serverless function on Netlify
+        // Send a POST request to your serverless function
         try {
             const response = await fetch('/.netlify/functions/chatbot', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'
                 },
-                body: JSON.stringify({ userMessage })
+                body: JSON.stringify({ userMessage }) // Send the user input as JSON
             });
-            const data = await response.json();
-            appendMessage(data.response || "Sorry, I couldn't understand that.", 'bot');
+
+            const data = await response.json(); // Get the response from the serverless function
+            appendMessage(data.response || "Sorry, I couldn't understand that.", 'bot'); // Display the response
         } catch (error) {
             appendMessage("Sorry, something went wrong. Try again.", 'bot');
-            console.error('Error:', error);
+            console.error('Error:', error); // Log any errors
         }
     }
 
+    // Function to append messages to the chat window
     function appendMessage(message, sender) {
         const div = document.createElement('div');
-        div.classList.add(sender === 'user' ? 'user-msg' : 'bot-msg');
+        div.classList.add(sender === 'user' ? 'user-msg' : 'bot-msg'); // Apply styling for user/bot
         div.textContent = message;
         chatBox.appendChild(div);
-        chatBox.scrollTop = chatBox.scrollHeight;
+        chatBox.scrollTop = chatBox.scrollHeight; // Scroll to the bottom of the chat window
     }
 </script>
