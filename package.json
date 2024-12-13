@@ -1,0 +1,12 @@
+{
+  "name": "marxist-ideology-chatbot",
+  "version": "1.0.0",
+  "description": "A chatbot based on Marxist ideology.",
+  "main": "index.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "node-fetch": "^2.6.7"
+  }
+}
