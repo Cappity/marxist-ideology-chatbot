@@ -1,11 +1,27 @@
-const fetch = require('node-fetch'); // Ensure this is included to use the fetch function
+const fetch = require('node-fetch'); // Make sure 'node-fetch' is included
 
 exports.handler = async function(event, context) {
+    const headers = {
+        'Access-Control-Allow-Origin': '*', // Allow requests from any origin
+        'Access-Control-Allow-Methods': 'OPTIONS, POST, GET', // Allow specific HTTP methods
+        'Access-Control-Allow-Headers': 'Content-Type', // Allow Content-Type header
+    };
+
+    // Handle OPTIONS request for preflight CORS request
+    if (event.httpMethod === 'OPTIONS') {
+        return {
+            statusCode: 204,
+            headers: headers,
+            body: JSON.stringify({})
+        };
+    }
+
     try {
         // Check if the request is a POST request
         if (event.httpMethod !== 'POST') {
             return {
                 statusCode: 405,
+                headers: headers,
                 body: JSON.stringify({ error: 'Only POST method is allowed' })
             };
         }
@@ -16,6 +32,7 @@ exports.handler = async function(event, context) {
         if (!userMessage) {
             return {
                 statusCode: 400,
+                headers: headers,
                 body: JSON.stringify({ error: 'Message is missing' })
             };
         }
@@ -42,11 +59,13 @@ exports.handler = async function(event, context) {
         if (response.ok && data) {
             return {
                 statusCode: 200,
+                headers: headers,
                 body: JSON.stringify({ response: data.choices[0].message.content })
             };
         } else {
             return {
                 statusCode: 500,
+                headers: headers,
                 body: JSON.stringify({ error: 'Error in fetching the response from the AI model.' })
             };
         }
@@ -54,6 +73,7 @@ exports.handler = async function(event, context) {
         console.error('Error in function:', error);
         return {
             statusCode: 500,
+            headers: headers,
             body: JSON.stringify({ error: 'Internal server error' })
         };
     }
