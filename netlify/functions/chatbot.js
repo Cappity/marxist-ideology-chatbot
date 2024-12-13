@@ -1,52 +1,52 @@
 const fetch = require('node-fetch');
 
 exports.handler = async function(event, context) {
-  let body;
+    try {
+        // Check if the body is empty
+        if (!event.body) {
+            return {
+                statusCode: 400,
+                body: JSON.stringify({ error: "Empty body" })
+            };
+        }
 
-  // Safely parse the body and check if it's empty
-  try {
-    body = JSON.parse(event.body);
-  } catch (e) {
-    console.error('Error parsing JSON:', e);
-    return {
-      statusCode: 400,
-      body: JSON.stringify({ error: "Invalid JSON input or empty body." })
-    };
-  }
+        const { userMessage } = JSON.parse(event.body);
 
-  // Check if userMessage is present in the request body
-  if (!body || !body.userMessage) {
-    return {
-      statusCode: 400,
-      body: JSON.stringify({ error: "Missing 'userMessage' in the input" })
-    };
-  }
+        // Log the received message for debugging
+        console.log("Received user message:", userMessage);
 
-  const userMessage = body.userMessage;
+        if (!userMessage) {
+            return {
+                statusCode: 400,
+                body: JSON.stringify({ error: "Invalid JSON input or empty message." })
+            };
+        }
 
-  try {
-    // Call the Hugging Face API with the message
-    const response = await fetch('https://api-inference.huggingface.co/models/YOUR_MODEL_NAME', {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${process.env.API_KEY}`,
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({ inputs: userMessage })
-    });
+        // Example: Use an external API for responding (replace with real API)
+        const API_KEY = process.env.API_KEY; // Ensure API_KEY is set in your environment variables
+        const url = `https://api.example.com/ask?message=${encodeURIComponent(userMessage)}&apiKey=${API_KEY}`;
+        
+        const apiResponse = await fetch(url);
+        const data = await apiResponse.json();
 
-    const data = await response.json();
-
-    // Return the response from the Hugging Face API
-    return {
-      statusCode: 200,
-      body: JSON.stringify({ response: data })
-    };
-  } catch (error) {
-    console.error('Error fetching from Hugging Face:', error);
-    return {
-      statusCode: 500,
-      body: JSON.stringify({ error: 'Internal Server Error' })
-    };
-  }
+        // Check if the response from the API is valid
+        if (data.answer) {
+            return {
+                statusCode: 200,
+                body: JSON.stringify({ response: data.answer })
+            };
+        } else {
+            return {
+                statusCode: 400,
+                body: JSON.stringify({ response: "Sorry, I couldn't understand that." })
+            };
+        }
+    } catch (error) {
+        // Log any errors that occur
+        console.error("Error:", error);
+        return {
+            statusCode: 500,
+            body: JSON.stringify({ error: "Error processing the request" })
+        };
+    }
 };
