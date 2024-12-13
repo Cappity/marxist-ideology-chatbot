@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -7,61 +8,82 @@
     <style>
         body {
             font-family: Arial, sans-serif;
-            background-color: #f4f4f9;
             margin: 0;
             padding: 0;
+            background-color: #f1f1f1;
             display: flex;
             justify-content: center;
             align-items: center;
             height: 100vh;
-            flex-direction: column;
         }
+
         .chat-container {
-            width: 60%;
+            width: 100%;
             max-width: 600px;
-            background-color: white;
-            border-radius: 10px;
+            background-color: #fff;
+            border-radius: 8px;
             padding: 20px;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
             display: flex;
             flex-direction: column;
-            height: 80%;
         }
-        .chat-output {
-            flex-grow: 1;
+
+        #chatbot-output {
+            flex: 1;
+            margin-bottom: 20px;
             overflow-y: auto;
-            margin-bottom: 10px;
+            padding-right: 10px;
         }
-        input[type="text"] {
+
+        #chatbot-output p {
+            background-color: #efefef;
             padding: 10px;
+            margin: 5px 0;
             border-radius: 5px;
-            border: 1px solid #ccc;
-            width: 100%;
         }
+
+        #chatbot-output .message {
+            background-color: #d1e7dd;
+            color: #155724;
+        }
+
+        #chatbot-output .user-message {
+            background-color: #cce5ff;
+            color: #004085;
+            text-align: right;
+        }
+
+        input[type="text"] {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            font-size: 16px;
+        }
+
         button {
-            padding: 10px 15px;
-            background-color: #007BFF;
-            color: white;
+            padding: 10px 20px;
+            background-color: #007bff;
             border: none;
+            color: white;
             border-radius: 5px;
             cursor: pointer;
+            font-size: 16px;
         }
+
         button:hover {
             background-color: #0056b3;
         }
-        .message {
-            margin: 10px 0;
-            padding: 10px;
-            border-radius: 5px;
-            background-color: #e9ecef;
-        }
     </style>
 </head>
+
 <body>
-    <h1>Marxist Ideology Chatbot</h1>
     <div class="chat-container">
-        <div class="chat-output" id="chatbot-output"></div>
-        <input type="text" id="chat-input" placeholder="Ask a question..." />
+        <div id="chatbot-output">
+            <!-- Chat messages will appear here -->
+        </div>
+        <input type="text" id="chat-input" placeholder="Ask me about Marxist ideology..." />
         <button onclick="askQuestion()">Ask</button>
     </div>
 
@@ -74,28 +96,32 @@
             responseContainer.innerHTML = "<p>Loading...</p>";
 
             try {
-                // Make sure the URL is correct for your Netlify function
+                // Make the POST request to the Netlify function
                 const response = await fetch('https://marxist-ideology-chatbot.netlify.app/.netlify/functions/chatbot', {
                     method: 'POST',
                     headers: {
-                        'Content-Type': 'application/json', // Ensure it's application/json
+                        'Content-Type': 'application/json',
                     },
-                    body: JSON.stringify({ userMessage: input }) // Ensure that this is the correct data structure
+                    body: JSON.stringify({ userMessage: input }) // Send the message in JSON format
                 });
 
                 const data = await response.json();
 
-                // Check if the response has a valid message
-                if (data.response) {
-                    responseContainer.innerHTML = `<p class="message">${data.response}</p>`;
+                // Check for error in response
+                if (data.error) {
+                    responseContainer.innerHTML = `<p class='message'>Error: ${data.error}</p>`;
                 } else {
-                    responseContainer.innerHTML = "<p class='message'>Sorry, I couldn't understand that. Please try again.</p>";
+                    // Display the response from the backend
+                    responseContainer.innerHTML = `<p class='message user-message'>${input}</p>`; // Display user's message
+                    responseContainer.innerHTML += `<p class='message'>${data.response}</p>`; // Display chatbot's response
                 }
             } catch (error) {
+                // Handle errors in fetching response
                 console.error('Error:', error);
                 responseContainer.innerHTML = "<p class='message'>Error: Could not fetch response</p>";
             }
         }
     </script>
 </body>
+
 </html>
