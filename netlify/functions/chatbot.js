@@ -1,104 +1,60 @@
-const fetch = require('node-fetch');
+const fetch = require('node-fetch'); // Ensure this is included to use the fetch function
 
 exports.handler = async function(event, context) {
-    // Set CORS headers to allow the frontend domain to access the function
-    const headers = {
-        'Access-Control-Allow-Origin': 'https://cappity.github.io', // Allow your frontend domain here
-        'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
-        'Access-Control-Allow-Headers': 'Content-Type',
-    };
-
-    // If the request is a preflight request (OPTIONS), we just return the CORS headers without processing the request
-    if (event.httpMethod === 'OPTIONS') {
-        return {
-            statusCode: 200,
-            headers,
-            body: '',
-        };
-    }
-
     try {
-        // Ensure the body is not empty
-        if (!event.body) {
+        // Check if the request is a POST request
+        if (event.httpMethod !== 'POST') {
+            return {
+                statusCode: 405,
+                body: JSON.stringify({ error: 'Only POST method is allowed' })
+            };
+        }
+
+        // Parse the incoming JSON body
+        const { userMessage } = JSON.parse(event.body);
+
+        if (!userMessage) {
             return {
                 statusCode: 400,
-                headers,
-                body: JSON.stringify({ error: "Empty body" })
+                body: JSON.stringify({ error: 'Message is missing' })
             };
         }
 
-        // Try to parse the incoming JSON body
-        let parsedBody;
-        try {
-            parsedBody = JSON.parse(event.body);
-        } catch (error) {
-            return {
-                statusCode: 400,
-                headers,
-                body: JSON.stringify({ error: "Invalid JSON format" })
-            };
-        }
+        // Use your OpenAI API or any chatbot API here
+        const apiKey = process.env.API_KEY; // Ensure your API key is available in environment variables
 
-        const { userMessage } = parsedBody;
+        // Replace with actual chatbot service call, for example OpenAI API
+        const response = await fetch('https://api.openai.com/v1/completions', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${apiKey}`,
+            },
+            body: JSON.stringify({
+                model: 'gpt-3.5-turbo',
+                messages: [{ role: 'user', content: userMessage }],
+            }),
+        });
 
-        // Log the received message
-        console.log("Received user message:", userMessage);
+        const data = await response.json();
 
-        // Ensure there's a message
-        if (!userMessage || userMessage.trim() === "") {
-            return {
-                statusCode: 400,
-                headers,
-                body: JSON.stringify({ error: "Message is empty or invalid" })
-            };
-        }
-
-        // Example: Use an external API for responding (replace with your API URL)
-        const API_KEY = process.env.API_KEY;
-        if (!API_KEY) {
-            return {
-                statusCode: 500,
-                headers,
-                body: JSON.stringify({ error: "API_KEY is missing" })
-            };
-        }
-
-        const url = `https://api.example.com/ask?message=${encodeURIComponent(userMessage)}&apiKey=${API_KEY}`;
-        
-        // Make a request to the API (replace with your actual API)
-        const apiResponse = await fetch(url);
-        
-        if (!apiResponse.ok) {
-            return {
-                statusCode: 500,
-                headers,
-                body: JSON.stringify({ error: "Failed to fetch response from external API" })
-            };
-        }
-
-        const data = await apiResponse.json();
-
-        // Check if the API returned a valid response
-        if (data.answer) {
+        // Check if the response is successful
+        if (response.ok && data) {
             return {
                 statusCode: 200,
-                headers,
-                body: JSON.stringify({ response: data.answer })
+                body: JSON.stringify({ response: data.choices[0].message.content })
             };
         } else {
             return {
-                statusCode: 400,
-                headers,
-                body: JSON.stringify({ response: "Sorry, I couldn't understand that." })
+                statusCode: 500,
+                body: JSON.stringify({ error: 'Error in fetching the response from the AI model.' })
             };
         }
     } catch (error) {
-        // Log any errors for debugging
-        console.error("Error:", error);
+        console.error('Error in function:', error);
         return {
             statusCode: 500,
-            headers,
-            body: JSON.stringify({ error: "Error processing the request" })
+            body: JSON.stringify({ error: 'Internal server error' })
         };
     }
 };
