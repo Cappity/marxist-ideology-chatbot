@@ -12,7 +12,7 @@ exports.handler = async function(event, context) {
     } else {
         // Hugging Face API URL and your API key
         const HUGGING_FACE_API_URL = 'https://api-inference.huggingface.co/models/gpt2'; // Or any other Hugging Face model
-        const HUGGING_FACE_API_KEY = 'your_huggingface_api_key';  // Replace with your Hugging Face API key
+        const HUGGING_FACE_API_KEY = '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';  // Replace with your Hugging Face API key
 
         // Send the user message to the Hugging Face API
         const response = await fetch(HUGGING_FACE_API_URL, {
