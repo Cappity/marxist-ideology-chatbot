@@ -1,0 +1,68 @@
+body {
+    font-family: 'Arial', sans-serif;
+    background: linear-gradient(45deg, #FF6F61, #6A1B9A); /* Sexy gradient background */
+    margin: 0;
+    padding: 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    color: white;
+}
+
+.chat-container {
+    background: rgba(0, 0, 0, 0.7);  /* Semi-transparent black background */
+    border-radius: 10px;
+    padding: 20px;
+    width: 400px;
+    height: 500px;
+    display: flex;
+    flex-direction: column;
+}
+
+.chatbox {
+    flex: 1;
+    overflow-y: auto;
+    margin-bottom: 20px;
+}
+
+.user-message, .bot-message {
+    padding: 10px;
+    margin: 5px 0;
+    border-radius: 5px;
+    font-size: 14px;
+}
+
+.user-message {
+    background-color: #8E24AA; /* Purple for user messages */
+    text-align: right;
+    color: white;
+}
+
+.bot-message {
+    background-color: #1E88E5; /* Blue for bot replies */
+    text-align: left;
+    color: white;
+}
+
+#user-input {
+    padding: 10px;
+    width: 100%;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    margin-bottom: 10px;
+    font-size: 14px;
+}
+
+#send-button {
+    padding: 10px 20px;
+    background-color: #00C853; /* Green for send button */
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+#send-button:hover {
+    background-color: #00897B; /* Darker green on hover */
+}
