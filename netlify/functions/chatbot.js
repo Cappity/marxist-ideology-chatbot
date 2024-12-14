@@ -1,68 +1,31 @@
-const fetch = require('node-fetch');
+const fetch = require('node-fetch');  // Add this for API requests
 
 exports.handler = async function(event, context) {
-    // Handle preflight request (OPTIONS method)
-    if (event.httpMethod === 'OPTIONS') {
-        return {
-            statusCode: 204, // No Content
-            headers: {
-                'Access-Control-Allow-Origin': '*', // Allow cross-origin requests
-                'Access-Control-Allow-Methods': 'OPTIONS,POST', // Allow specific methods
-                'Access-Control-Allow-Headers': 'Content-Type' // Allow Content-Type header
-            }
-        };
-    }
+    const { userMessage } = JSON.parse(event.body);
 
-    // Handle POST request
-    if (event.httpMethod === 'POST') {
-        let userMessage;
-        try {
-            const { userMessage: message } = JSON.parse(event.body);
-            userMessage = message;
-        } catch (error) {
-            return {
-                statusCode: 400, // Bad Request
-                body: JSON.stringify({ error: 'Invalid JSON input or empty body.' }),
-                headers: {
-                    'Access-Control-Allow-Origin': '*',
-                    'Access-Control-Allow-Methods': 'OPTIONS,POST',
-                    'Access-Control-Allow-Headers': 'Content-Type'
-                }
-            };
-        }
+    const HUGGING_FACE_API_URL = 'https://api-inference.huggingface.co/models/gpt2'; // Change this to your specific model endpoint
+    const HUGGING_FACE_API_KEY = 'your_huggingface_api_key'; // Add your Hugging Face API key here
 
-        // Generate a response based on the user's message
-        let response = "Sorry, I could not understand your request.";
-
-        // Simple response logic for the Marxism-related question
-        if (userMessage.toLowerCase().includes('marxism')) {
-            response = "Marxism is a socio-economic theory founded by Karl Marx that focuses on class struggle, capitalism, and the eventual establishment of a communist society.";
-        } else if (userMessage.toLowerCase().includes('capitalism')) {
-            response = "Capitalism is an economic system in which the means of production are privately owned, and the production of goods and services is for profit.";
-        } else if (userMessage.toLowerCase().includes('class struggle')) {
-            response = "Class struggle refers to the conflict between different classes in society, especially between the bourgeoisie (owners of production) and the proletariat (working class).";
-        }
-
-        // Return the response in JSON format
-        return {
-            statusCode: 200,
-            body: JSON.stringify({ response }),
-            headers: {
-                'Access-Control-Allow-Origin': '*', // Allow cross-origin requests
-                'Access-Control-Allow-Methods': 'OPTIONS,POST', // Allow specific methods
-                'Access-Control-Allow-Headers': 'Content-Type' // Allow Content-Type header
-            }
-        };
-    }
-
-    // Handle invalid HTTP methods
-    return {
-        statusCode: 405, // Method Not Allowed
-        body: JSON.stringify({ error: 'Only POST method is allowed' }),
+    const response = await fetch(HUGGING_FACE_API_URL, {
+        method: 'POST',
         headers: {
-            'Access-Control-Allow-Origin': '*',
-            'Access-Control-Allow-Methods': 'OPTIONS,POST',
-            'Access-Control-Allow-Headers': 'Content-Type'
-        }
+            'Authorization': `Bearer ${HUGGING_FACE_API_KEY}`,
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+            inputs: userMessage, // Send user input to the model
+        }),
+    });
+
+    const data = await response.json();
+
+    let reply = "Sorry, I couldn't understand your request.";  // Default error message
+    if (data && data[0] && data[0].generated_text) {
+        reply = data[0].generated_text;  // Extract the response from Hugging Face API
+    }
+
+    return {
+        statusCode: 200,
+        body: JSON.stringify({ reply: reply })
     };
 };
