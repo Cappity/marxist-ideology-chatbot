@@ -3,121 +3,47 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta http-equiv="X-UA-Compatible" content="ie=edge">
-    <title>AI Chatbot</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            background: linear-gradient(135deg, #6a11cb, #2575fc); /* Gradient background */
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            min-height: 100vh;
-            margin: 0;
-            color: white; /* White text for contrast */
-        }
-        .chat-container {
-            width: 100%;
-            max-width: 600px;
-            background-color: rgba(255, 255, 255, 0.9); /* Semi-transparent background */
-            border-radius: 8px;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-            padding: 20px;
-            display: flex;
-            flex-direction: column;
-        }
-        .chat-box {
-            height: 300px;
-            overflow-y: scroll;
-            margin-bottom: 20px;
-            padding: 10px;
-            background-color: #f9f9f9;
-            border-radius: 8px;
-            color: black; /* Text color inside chat box */
-        }
-        .input-container {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-        input[type="text"] {
-            width: 80%;
-            padding: 10px;
-            border: 1px solid #ddd;
-            border-radius: 8px;
-        }
-        button {
-            padding: 10px 15px;
-            background-color: #4CAF50;
-            color: white;
-            border: none;
-            border-radius: 8px;
-            cursor: pointer;
-        }
-        button:hover {
-            background-color: #45a049;
-        }
-        .footer {
-            position: fixed;
-            bottom: 10px;
-            left: 10px;
-            font-size: 12px;
-            color: #666;
-        }
-        .footer a {
-            color: #4CAF50;
-            text-decoration: none;
-        }
-    </style>
+    <title>AI Chatbot - Developed by Arahant</title>
+    <link rel="stylesheet" href="style.css">
 </head>
 <body>
+
     <div class="chat-container">
-        <h1>AI Chatbot</h1>
-        <div class="chat-box" id="chat-box">
-            <div id="chat-history"></div>
-        </div>
-        <div class="input-container">
-            <input type="text" id="user-input" placeholder="Type your message..." />
-            <button onclick="askQuestion()">Send</button>
-        </div>
-    </div>
-    <div class="footer">
-        Developed by <a href="https://your-link-here" target="_blank">Arahant</a>
+        <div class="chatbox" id="chatbox"></div>
+        <input type="text" id="user-input" placeholder="Ask me anything..." />
+        <button id="send-button">Send</button>
     </div>
 
     <script>
-        async function askQuestion() {
-            const userInput = document.getElementById("user-input").value;
-            const chatBox = document.getElementById("chat-box");
-            const chatHistory = document.getElementById("chat-history");
+        const sendButton = document.getElementById("send-button");
+        const userInput = document.getElementById("user-input");
+        const chatbox = document.getElementById("chatbox");
 
-            // Show user's message in chat history
-            const userMessage = document.createElement("div");
-            userMessage.textContent = "You: " + userInput;
-            chatHistory.appendChild(userMessage);
+        // Event listener for the send button
+        sendButton.onclick = async () => {
+            const userMessage = userInput.value;
+            if (userMessage.trim() === "") return;
 
-            // Send message to the backend function (Netlify function)
-            try {
-                const response = await fetch('https://marxist-ideology-chatbot.netlify.app/.netlify/functions/chatbot', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ userMessage: userInput }),
-                });
+            // Display the user's message in the chatbox
+            chatbox.innerHTML += `<div class="user-message">${userMessage}</div>`;
 
-                const data = await response.json();
-                const botMessage = document.createElement("div");
-                botMessage.textContent = "Bot: " + (data.reply || "Sorry, I couldn't understand your request.");
-                chatHistory.appendChild(botMessage);
-            } catch (error) {
-                const botMessage = document.createElement("div");
-                botMessage.textContent = "Bot: Error - Could not get a response.";
-                chatHistory.appendChild(botMessage);
-            }
+            // Send the user's message to the server (Netlify function)
+            const response = await fetch("https://marxist-ideology-chatbot.netlify.app/.netlify/functions/chatbot", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ userMessage })
+            });
 
-            chatBox.scrollTop = chatBox.scrollHeight; // Scroll to the bottom
-            document.getElementById("user-input").value = ""; // Clear input field
-        }
+            // Parse the response from the server
+            const data = await response.json();
+            const botReply = data.reply;
+
+            // Display the bot's reply
+            chatbox.innerHTML += `<div class="bot-message">${botReply}</div>`;
+            userInput.value = ""; // Clear input field after sending
+            chatbox.scrollTop = chatbox.scrollHeight; // Scroll to the bottom
+        };
     </script>
+
 </body>
 </html>
